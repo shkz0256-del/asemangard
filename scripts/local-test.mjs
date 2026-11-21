@@ -1,0 +1,17 @@
+process.env.LOCAL_TEST="1";process.env.AUTH_SECRET="test-secret";
+const mk=async(mod,method,b,h={})=>{const m=(await import(mod)).default;let out;const res={s:200,setHeader(){},status(c){this.s=c;return this},json(o){out={s:this.s,o}},end(){out={s:this.s}}};await m({method,body:b,headers:h,socket:{}},res);return out};
+const log=(t,r)=>console.log(t,r.s,JSON.stringify(r.o).slice(0,230));
+log("health",await mk("../api/health.js","GET"));
+const reg={firstName:"پگاه",lastName:"تست",mobile:"۰۹۱۲۱۲۳۴۵۶۷",idType:"national",idNumber:"0499370899",address:"تهران، خیابان ولیعصر، پلاک ۱",password:"abc12345"};
+let r=await mk("../api/register.js","POST",reg);log("register",r);const tok=r.o.token;
+log("dup",await mk("../api/register.js","POST",reg));
+log("badreg",await mk("../api/register.js","POST",{...reg,mobile:"123",idNumber:"1234567890",password:"x"}));
+log("login",await mk("../api/login.js","POST",{mobile:"09121234567",password:"abc12345"}));
+log("badlogin",await mk("../api/login.js","POST",{mobile:"09121234567",password:"nope"}));
+log("me",await mk("../api/me.js","GET",null,{authorization:"Bearer "+tok}));
+log("me-bad",await mk("../api/me.js","GET",null,{authorization:"Bearer "+tok+"x"}));
+const d=new Date(Date.now()+864e5*7).toISOString().slice(0,10),d2=new Date(Date.now()+864e5*14).toISOString().slice(0,10);
+const bk={trip:"round",from:"مشهد (MHD)",to:"توکیو (HND)",fromCode:"MHD",toCode:"HND",depart:d,return:d2,adult:2,child:1,infant:1,cls:"بیزینس",ticketType:"flex",baggage:"30",timeSlots:["morning","x"],direct:true,airlines:["TK","ZZ"],estimateUsd:3625};
+log("book",await mk("../api/bookings.js","POST",bk,{authorization:"Bearer "+tok}));
+log("book-same",await mk("../api/bookings.js","POST",{...bk,toCode:"MHD",to:"مشهد (MHD)"},{authorization:"Bearer "+tok}));
+log("list",await mk("../api/bookings.js","GET",null,{authorization:"Bearer "+tok}));
