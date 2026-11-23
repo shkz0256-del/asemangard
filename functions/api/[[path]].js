@@ -1,4 +1,4 @@
-const DEFAULT_API_ORIGIN = "https://asemangard-api.vercel.app";
+const DEFAULT_API_ORIGIN = "https://asemangard.vercel.app";
 const ALLOWED_ENDPOINTS = new Set(["health", "register", "login", "me", "bookings"]);
 
 export async function onRequest({ request, env }) {
